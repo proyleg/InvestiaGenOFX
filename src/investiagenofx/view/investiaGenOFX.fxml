@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.web.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.input.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="investiagenofx.view.InvestiaGenOFXController">
+   <children>
+      <BorderPane prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <top>
+            <MenuBar BorderPane.alignment="CENTER">
+              <menus>
+                <Menu mnemonicParsing="false" text="Fichier">
+                  <items>
+                    <MenuItem fx:id="f_quitter" mnemonicParsing="false" onAction="#quit" text="Quitter">
+                           <accelerator>
+                              <KeyCodeCombination alt="DOWN" code="Q" control="UP" meta="UP" shift="UP" shortcut="UP" />
+                           </accelerator></MenuItem>
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Aide">
+                  <items>
+                    <MenuItem mnemonicParsing="false" onAction="#about" text="À Propos" />
+                  </items>
+                </Menu>
+              </menus>
+               <cursor>
+                  <Cursor fx:constant="SW_RESIZE" />
+               </cursor>
+            </MenuBar>
+         </top>
+         <bottom>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <children>
+                  <TextField fx:id="f_investiaURL" layoutX="204.0" layoutY="14.0" />
+                  <Label layoutX="102.0" layoutY="18.0" text="Lien Investia :" />
+                  <ComboBox fx:id="f_clientNum" editable="true" layoutX="204.0" layoutY="52.0" />
+                  <Label layoutX="102.0" layoutY="56.0" text="Numéro de client :" />
+                  <Label layoutX="102.0" layoutY="95.0" text="Mot de passe :" />
+                  <Button fx:id="f_login" layoutX="422.0" layoutY="27.0" mnemonicParsing="false" onAction="#login" prefHeight="36.0" prefWidth="94.0" text="Login" />
+                  <Button fx:id="f_logout" layoutX="422.0" layoutY="77.0" mnemonicParsing="false" onAction="#logout" prefHeight="36.0" prefWidth="94.0" text="Logout" />
+                  <PasswordField fx:id="f_password" layoutX="204.0" layoutY="91.0" />
+                  <Button fx:id="f_account0" layoutX="302.0" layoutY="165.0" mnemonicParsing="false" onAction="#genTransactions" prefHeight="40.0" prefWidth="240.0" />
+                  <Button fx:id="f_account1" layoutX="302.0" layoutY="205.0" mnemonicParsing="false" onAction="#genTransactions" prefHeight="40.0" prefWidth="240.0" />
+                  <Button fx:id="f_account2" layoutX="302.0" layoutY="245.0" mnemonicParsing="false" onAction="#genTransactions" prefHeight="40.0" prefWidth="240.0" />
+                  <Button fx:id="f_account3" layoutX="302.0" layoutY="285.0" mnemonicParsing="false" onAction="#genTransactions" prefHeight="40.0" prefWidth="240.0" />
+                  <Button fx:id="f_account4" layoutX="302.0" layoutY="325.0" mnemonicParsing="false" onAction="#genTransactions" prefHeight="40.0" prefWidth="240.0" />
+                  <DatePicker fx:id="f_lastDate" layoutX="86.0" layoutY="236.0" />
+<fx:define>
+        <ArrayList fx:id="f_accountList">
+            <fx:reference source="f_account0" />
+            <fx:reference source="f_account1" />
+            <fx:reference source="f_account2" />
+            <fx:reference source="f_account3" />
+            <fx:reference source="f_account4" />
+        </ArrayList>
+    </fx:define>
+                  <Label fx:id="f_message" layoutX="86.0" layoutY="353.0" prefHeight="17.0" prefWidth="456.0" />
+                  <Label layoutX="394.0" layoutY="134.0" text="Comptes" underline="true">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="92.0" layoutY="205.0" text="À partir de cette date" />
+               </children>
+            </AnchorPane>
+         </bottom>
+      </BorderPane>
+   </children>
+</AnchorPane>
