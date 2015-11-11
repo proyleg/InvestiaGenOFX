@@ -1,11 +1,15 @@
 package investiagenofx.util;
 
+import investiagenofx.model.Investment;
 import investiagenofx.model.MyTransactions;
 import investiagenofx.model.Transaction;
+import investiagenofx.view.InvestiaGenOFXController;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.ObservableList;
 
 import ofx.BuyEnum;
 import ofx.BuyMutualFund;
@@ -124,6 +128,21 @@ public class OFXUtilites {
             }
         }
         investmentStatementResponse.setINVTRANLIST(investmentTransactionList);
+
+        InvestmentPositionList investmentPositionList = new InvestmentPositionList();
+        for (Investment investment : InvestiaGenOFXController.investments) {
+            if (investment.getName().equals("Cash")) {
+                continue;
+            }
+            investmentPositionList.getPOSMFOrPOSSTOCKOrPOSDEBT().add(genPositionMutualfund(
+                    investment.getSymbol(),
+                    Float.toString(investment.getQuantity()),
+                    Float.toString(investment.getLastPrice()),
+                    Float.toString(investment.getQuantity() * investment.getLastPrice()),
+                    LocalDate.now().format(Utilities.myDateFormat()) + "100000"));
+        }
+        investmentStatementResponse.setINVPOSLIST(investmentPositionList);
+
         investmentStatementTransactionResponse.setINVSTMTRS(investmentStatementResponse);
         investmentStatementResponseMessageSet.getINVSTMTTRNRSOrINVMAILTRNRSOrINVMAILSYNCRS().add(investmentStatementTransactionResponse);
 
@@ -152,7 +171,12 @@ public class OFXUtilites {
         investmentStatementResponse.setINVACCTFROM(investmentAccount);
         InvestmentPositionList investmentPositionList = new InvestmentPositionList();
         for (Transaction transaction : myTransactions.getTransactions()) {
-            investmentPositionList.getPOSMFOrPOSSTOCKOrPOSDEBT().add(genPositionMutualfund(transaction));
+            investmentPositionList.getPOSMFOrPOSSTOCKOrPOSDEBT().add(genPositionMutualfund(
+                    transaction.getSymbol(),
+                    transaction.getUnitBalance(),
+                    transaction.getPrice(),
+                    Float.toString(Float.parseFloat(transaction.getUnitBalance()) * Float.parseFloat(transaction.getPrice())),
+                    transaction.getDate().format(Utilities.myDateFormat()) + "100000"));
         }
         investmentStatementResponse.setINVPOSLIST(investmentPositionList);
         investmentStatementTransactionResponse.setINVSTMTRS(investmentStatementResponse);
@@ -161,19 +185,19 @@ public class OFXUtilites {
         return investmentStatementResponseMessageSet;
     }
 
-    private static PositionMutualFund genPositionMutualfund(Transaction transaction) {
+    private static PositionMutualFund genPositionMutualfund(String symbol, String units, String unitPrice, String marketValue, String datePrice) {
         PositionMutualFund positionMutualFund = new PositionMutualFund();
         InvestmentPosition investmentPosition = new InvestmentPosition();
         SecurityId securityId = new SecurityId();
-        securityId.setUNIQUEID(transaction.getSymbol());
+        securityId.setUNIQUEID(symbol);
         securityId.setUNIQUEIDTYPE("CUSIP");
         investmentPosition.setSECID(securityId);
         investmentPosition.setHELDINACCT(SubAccountEnum.CASH);
         investmentPosition.setPOSTYPE(PositionTypeEnum.LONG);
-        investmentPosition.setUNITS("0");
-        investmentPosition.setUNITPRICE(transaction.getPrice());
-        investmentPosition.setMKTVAL(transaction.getPrice());
-        investmentPosition.setDTPRICEASOF(transaction.getDate().format(Utilities.myDateFormat()) + "100000");
+        investmentPosition.setUNITS(units);
+        investmentPosition.setUNITPRICE(unitPrice);
+        investmentPosition.setMKTVAL(marketValue);
+        investmentPosition.setDTPRICEASOF(datePrice);
         positionMutualFund.setINVPOS(investmentPosition);
         return positionMutualFund;
     }
@@ -181,33 +205,41 @@ public class OFXUtilites {
     /**
      *
      * @param myTransactions
+     * @param investments
      * @return
      */
-    public static SecurityListResponseMessageSetV1 genSecurityListResponseMessageSet(MyTransactions myTransactions) {
+    public static SecurityListResponseMessageSetV1 genSecurityListResponseMessageSet(MyTransactions myTransactions, ObservableList<Investment> investments) {
         List<String> symbols = new ArrayList<>();
         SecurityListResponseMessageSetV1 securityListResponseMessageSet = new SecurityListResponseMessageSetV1();
         SecurityList securityList = new SecurityList();
 
         for (Transaction transaction : myTransactions.getTransactions()) {
             if (!symbols.contains(transaction.getSymbol())) {
-                securityList.getMFINFOOrSTOCKINFOOrOPTINFO().add(genMutualFundInfo(transaction));
+                securityList.getMFINFOOrSTOCKINFOOrOPTINFO().add(genMutualFundInfo(transaction.getSymbol()));
                 symbols.add(transaction.getSymbol());
             }
         }
+        for (Investment investment : investments) {
+            if (!symbols.contains(investment.getSymbol()) && !investment.getName().equals("Cash")) {
+                securityList.getMFINFOOrSTOCKINFOOrOPTINFO().add(genMutualFundInfo(investment.getSymbol()));
+                symbols.add(investment.getSymbol());
+            }
+        }
+        
         securityListResponseMessageSet.setSECLIST(securityList);
 
         return securityListResponseMessageSet;
     }
 
-    private static MutualFundInfo genMutualFundInfo(Transaction transaction) {
+    private static MutualFundInfo genMutualFundInfo(String symbol) {
         MutualFundInfo mutualFundInfo = new MutualFundInfo();
         GeneralSecurityInfo generalSecurityInfo = new GeneralSecurityInfo();
         SecurityId securityId = new SecurityId();
-        securityId.setUNIQUEID(transaction.getSymbol());
+        securityId.setUNIQUEID(symbol);
         securityId.setUNIQUEIDTYPE("CUSIP");
         generalSecurityInfo.setSECID(securityId);
-        generalSecurityInfo.setSECNAME(transaction.getSymbol());
-        generalSecurityInfo.setTICKER(transaction.getSymbol());
+        generalSecurityInfo.setSECNAME(symbol);
+        generalSecurityInfo.setTICKER(symbol);
         mutualFundInfo.setSECINFO(generalSecurityInfo);
         mutualFundInfo.setMFTYPE(MutualFundTypeEnum.OPENEND);
 

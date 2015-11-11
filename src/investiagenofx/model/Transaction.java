@@ -15,6 +15,7 @@ public class Transaction {
     private final String symbol;
     private final String unit;
     private final String price;
+    private final String unitBalance;
 
     /**
      *
@@ -25,9 +26,10 @@ public class Transaction {
      * @param symbol
      * @param unit
      * @param price
+     * @param unitBalance
      */
     public Transaction(LocalDate date, String type, String amount, String fitid,
-            String symbol, String unit, String price) {
+            String symbol, String unit, String price,String unitBalance) {
         this.date = date;
         this.type = type;
         this.amount = amount;
@@ -35,6 +37,7 @@ public class Transaction {
         this.symbol = symbol;
         this.unit = unit;
         this.price = price;
+        this.unitBalance = unitBalance;
     }
 
     /**
@@ -91,5 +94,12 @@ public class Transaction {
      */
     public String getPrice() {
         return price;
+    }
+
+    /**
+     * @return the unitBalance
+     */
+    public String getUnitBalance() {
+        return unitBalance;
     }
 }

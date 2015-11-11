@@ -34,17 +34,21 @@ public class InvestiaGenOFX extends Application {
     /**
      *
      */
+    static private Stage pStage;
     static public HtmlPage page;
     static public WebClient webClient;
-    static public String[] accountHref;
+    static public String[] accountHrefTransac;
+    static public String[] accountHrefInvest;
     static public String[] accountNumber;
     static private Logger log;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        setPrimaryStage(primaryStage);
         // Make sure we are in English on French java plateform
         Locale.setDefault(Locale.ENGLISH);
-        accountHref = new String[5];
+        accountHrefTransac = new String[5];
+        accountHrefInvest = new String[5];
         accountNumber = new String[5];
         webClient = new WebClient(BrowserVersion.FIREFOX_38);
 //        WebClientUtils.attachVisualDebugger(webClient);
@@ -98,5 +102,13 @@ public class InvestiaGenOFX extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public static Stage getPrimaryStage() {
+        return pStage;
+    }
+
+    private void setPrimaryStage(Stage pStage) {
+        InvestiaGenOFX.pStage = pStage;
     }
 }
