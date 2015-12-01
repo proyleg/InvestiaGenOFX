@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
@@ -24,7 +25,7 @@ public class Utilities {
 
     /**
      *
-     * @return 
+     * @return
      */
     public static DateTimeFormatter myDateFormat() {
         return DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -73,7 +74,7 @@ public class Utilities {
         command = quickenCmd.substring(0, quickenCmd.lastIndexOf(" ")) + " \"" + new File(file).getAbsolutePath() + "\"";
         try {
             pr = Runtime.getRuntime().exec(command);
-            pr.waitFor();
+            pr.waitFor(10, TimeUnit.SECONDS);
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
         }

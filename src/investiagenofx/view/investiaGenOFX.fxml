@@ -15,17 +15,17 @@
          <top>
             <MenuBar BorderPane.alignment="CENTER">
               <menus>
-                <Menu mnemonicParsing="false" text="Fichier">
+                <Menu mnemonicParsing="false" text="_Fichier">
                   <items>
-                    <MenuItem fx:id="f_quitter" mnemonicParsing="false" onAction="#quit" text="Quitter">
+                    <MenuItem fx:id="f_quitter" onAction="#quit" text="_Quitter">
                            <accelerator>
                               <KeyCodeCombination alt="DOWN" code="Q" control="UP" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator></MenuItem>
                   </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Aide">
+                <Menu mnemonicParsing="false" text="_Aide">
                   <items>
-                    <MenuItem mnemonicParsing="false" onAction="#about" text="À Propos" />
+                    <MenuItem onAction="#about" text="À _Propos" />
                   </items>
                 </Menu>
               </menus>

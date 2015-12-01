@@ -9,6 +9,7 @@ import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlSpan;
@@ -17,11 +18,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlTable;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import investiagenofx.InvestiaGenOFX;
 
-import static investiagenofx.InvestiaGenOFX.webClient;
-import static investiagenofx.InvestiaGenOFX.page;
-import static investiagenofx.InvestiaGenOFX.accountHrefTransac;
-import static investiagenofx.InvestiaGenOFX.accountHrefInvest;
-import static investiagenofx.InvestiaGenOFX.accountNumber;
 import investiagenofx.model.MyTransactions;
 import investiagenofx.model.Transaction;
 import investiagenofx.model.Investment;
@@ -74,13 +70,18 @@ import ofx.OFX;
  * @author Pierre
  */
 public class InvestiaGenOFXController implements Initializable {
+    private static HtmlPage page;
+    private static  int nbrAccount = 5;
+    private static  String[] accountHrefTransac = new String[nbrAccount];
+    private static  String[] accountHrefInvest = new String[nbrAccount];
+    private static  String[] accountNumber = new String[nbrAccount];
 
-    static public ObservableList<Investment> investments;
+    public static ObservableList<Investment> investments;
 
     @FXML
     private TextField f_investiaURL;
     @FXML
-    private ComboBox f_clientNum;
+    private ComboBox<String> f_clientNum;
     @FXML
     private PasswordField f_password;
     @FXML
@@ -197,6 +198,7 @@ public class InvestiaGenOFXController implements Initializable {
         f_login.setDisable(false);
         f_logout.setDisable(true);
         f_clientNum.setDisable(false);
+        f_clientNum.getEditor().setText("");
         f_password.setDisable(false);
         f_password.setText("");
         f_investiaURL.setDisable(false);
@@ -208,7 +210,7 @@ public class InvestiaGenOFXController implements Initializable {
 
     @FXML
     void quit(ActionEvent event) {
-        webClient.close();
+        InvestiaGenOFX.getWebClient().close();
         PropertiesInit.setInvestiaURL(f_investiaURL.getText());
         PropertiesInit.setLastGenUsedDate(f_lastDate.getValue().toString());
         PropertiesInit.setClientNumList(f_clientNum.getItems().toString().replace("[", "").replace("]", ""));
@@ -220,12 +222,12 @@ public class InvestiaGenOFXController implements Initializable {
     @FXML
     void login(ActionEvent event) {
         try {
-            page = webClient.getPage(f_investiaURL.getText());
+            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText());
 //            page = webClient.getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/Login.htm");
             // English please 
             HtmlAnchor anchor = page.getHtmlElementById("a0");
             if (anchor.getTextContent().toLowerCase().startsWith("english")) {
-                page = webClient.getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
+                page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
             }
             HtmlForm form = page.getFormByName("login");
             HtmlTextInput userId = form.getInputByName("login:userId");
@@ -237,6 +239,7 @@ public class InvestiaGenOFXController implements Initializable {
 //            page =  webClient.getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/InvalidLogin.htm");
 //            page = webClient.getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/Dashboard.htm");
         } catch (Exception ex) {
+            f_message.setText("Le système ne smble pas accessible. Voir le fichier de log...");
             Logger.getLogger(InvestiaGenOFXController.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
@@ -261,7 +264,7 @@ public class InvestiaGenOFXController implements Initializable {
     void logout(ActionEvent event) {
         HtmlAnchor anchor = page.getHtmlElementById("a1");
         try {
-            page = webClient.getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
+            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
 //            page = webClient.getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/Login.htm");
         } catch (Exception ex) {
             Logger.getLogger(InvestiaGenOFXController.class.getName()).log(Level.SEVERE, null, ex);
@@ -274,7 +277,7 @@ public class InvestiaGenOFXController implements Initializable {
             try {
                 HtmlDivision div = page.getHtmlElementById("regPanel:0:table:" + i + ":row");
                 f_accountList.get(i).setVisible(true);
-                f_accountList.get(i).setText(div.asText());
+                f_accountList.get(i).setText(div.asText().replaceAll("(\r\n)+", "\r\n"));
                 HtmlAnchor anchor = page.getHtmlElementById("regPanel:0:table:" + i + ":a6");
 //                System.out.println(anchor.getTextContent());
 //                System.out.println(anchor.getAttribute("title"));
@@ -298,12 +301,12 @@ public class InvestiaGenOFXController implements Initializable {
         }
         try {
             // Get the transactions page for the account from the pressed button value=0..5 
-            page = webClient.getPage(f_investiaURL.getText() + accountHrefTransac[idxButton]);
+            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefTransac[idxButton]);
             // Switch to display 15 transactions per page
-            HtmlSelect select = page.getHtmlElementById("j_id224:pageSize");
+            HtmlSelect select = page.getHtmlElementById("j_id183:pageSize");
             select.setSelectedAttribute("15", true);
             select.click();
-            page = webClient.getPage(f_investiaURL.getText() + accountHrefTransac[idxButton]);
+            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefTransac[idxButton]);
         } catch (Exception ex) {
             Logger.getLogger(InvestiaGenOFXController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -337,11 +340,18 @@ public class InvestiaGenOFXController implements Initializable {
     private void getInvestments(int accountIdx) {
         investments = FXCollections.observableArrayList();
         try {
-            page = webClient.getPage(f_investiaURL.getText() + accountHrefInvest[accountIdx]);
+            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefInvest[accountIdx]);
         } catch (Exception ex) {
             Logger.getLogger(InvestiaGenOFXController.class.getName()).log(Level.SEVERE, null, ex);
         }
         HtmlDivision div;
+        div = (HtmlDivision) page.getByXPath("//div[@class='dateTxt ']").get(0);
+        String[] tokenDate = div.asText().replace(",", "").split(" ");
+        LocalDate balanceDate = LocalDate.parse(
+                tokenDate[tokenDate.length - 3]
+                + tokenDate[tokenDate.length - 2]
+                + tokenDate[tokenDate.length - 1],
+                DateTimeFormatter.ofPattern("MMMMddyyyy"));
         for (int i = 0; i < 1000; i++) {
             try {
                 div = page.getHtmlElementById("table:" + i + ":row");
@@ -353,12 +363,7 @@ public class InvestiaGenOFXController implements Initializable {
             String percentage = token[1].replace("%", "").trim();
             String marketValue = token[2].replace("CAD", "").replace(",", "").trim();
             if (name.equals("Cash")) {
-                Investment investment = new Investment();
-                investment.name.set(name);
-                investment.quantity.setValue(Float.valueOf(marketValue));
-                investment.lastPrice.setValue(1);
-                investment.marketValue.setValue(Float.valueOf(marketValue));
-                investment.percentage.setValue(Float.valueOf(percentage));
+                Investment investment = new Investment("", name, marketValue, "1", marketValue, percentage, balanceDate);
                 investments.add(investment);
                 continue;
             }
@@ -370,13 +375,7 @@ public class InvestiaGenOFXController implements Initializable {
             table = (HtmlTable) div.getByXPath("table").get(0);
             String quantity = table.getCellAt(5, 1).getTextContent().replace(",", "").trim();
             String lastPrice = table.getCellAt(6, 1).getTextContent().replace("\n", "").replace("CAD", "").trim();
-            Investment investment = new Investment();
-            investment.symbol.set(symbol);
-            investment.name.set(name);
-            investment.quantity.setValue(Float.valueOf(quantity));
-            investment.lastPrice.setValue(Float.valueOf(lastPrice));
-            investment.marketValue.setValue(Float.valueOf(marketValue));
-            investment.percentage.setValue(Float.valueOf(percentage));
+            Investment investment = new Investment(symbol, name, quantity, lastPrice, marketValue, percentage, balanceDate);
             investments.add(investment);
         }
     }
@@ -437,7 +436,7 @@ public class InvestiaGenOFXController implements Initializable {
             }
             try {
                 HtmlAnchor anchor = page.getHtmlElementById("next-trans-account");
-                page = webClient.getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
+                page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
             } catch (Exception ex) {
                 break;
             }
@@ -483,7 +482,7 @@ public class InvestiaGenOFXController implements Initializable {
         ((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/myIcons/Teddy-Bear-Sick-icon.png"));
         alert.setTitle("Information");
         alert.setHeaderText("InvestiaGenOFX");
-        alert.setContentText("Version 1.1");
+        alert.setContentText("Version 1.1_1");
         alert.show();
     }
 }

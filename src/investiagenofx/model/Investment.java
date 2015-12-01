@@ -5,6 +5,7 @@
  */
 package investiagenofx.model;
 
+import java.time.LocalDate;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -14,12 +15,23 @@ import javafx.beans.property.SimpleStringProperty;
  */
 public class Investment {
 
-    public SimpleStringProperty symbol = new SimpleStringProperty();
-    public SimpleStringProperty name = new SimpleStringProperty();
-    public SimpleFloatProperty lastPrice = new SimpleFloatProperty();
-    public SimpleFloatProperty quantity = new SimpleFloatProperty();
-    public SimpleFloatProperty marketValue = new SimpleFloatProperty();
-    public SimpleFloatProperty percentage = new SimpleFloatProperty();
+    private final SimpleStringProperty symbol = new SimpleStringProperty();
+    private final SimpleStringProperty name = new SimpleStringProperty();
+    private final SimpleFloatProperty lastPrice = new SimpleFloatProperty();
+    private final SimpleFloatProperty quantity = new SimpleFloatProperty();
+    private final SimpleFloatProperty marketValue = new SimpleFloatProperty();
+    private final SimpleFloatProperty percentage = new SimpleFloatProperty();
+    private final LocalDate balanceDate;
+
+    public Investment(String symbol, String name, String quantity, String lastPrice, String marketValue, String percentage, LocalDate balanceDate) {
+        this.symbol.set(symbol);
+        this.name.set(name);
+        this.quantity.setValue(Float.valueOf(quantity));
+        this.lastPrice.setValue(Float.valueOf(lastPrice));
+        this.marketValue.setValue(Float.valueOf(marketValue));
+        this.percentage.setValue(Float.valueOf(percentage));
+        this.balanceDate = balanceDate;
+    }
 
     public String getSymbol() {
         return symbol.get();
@@ -43,5 +55,9 @@ public class Investment {
 
     public Float getPercentage() {
         return percentage.get();
+    }
+
+    public LocalDate getBalanceDate() {
+        return balanceDate;
     }
 }

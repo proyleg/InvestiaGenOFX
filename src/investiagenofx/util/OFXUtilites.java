@@ -4,7 +4,6 @@ import investiagenofx.model.Investment;
 import investiagenofx.model.MyTransactions;
 import investiagenofx.model.Transaction;
 import investiagenofx.view.InvestiaGenOFXController;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -139,7 +138,7 @@ public class OFXUtilites {
                     Float.toString(investment.getQuantity()),
                     Float.toString(investment.getLastPrice()),
                     Float.toString(investment.getQuantity() * investment.getLastPrice()),
-                    LocalDate.now().format(Utilities.myDateFormat()) + "100000"));
+                    investment.getBalanceDate().format(Utilities.myDateFormat()) + "100000"));
         }
         investmentStatementResponse.setINVPOSLIST(investmentPositionList);
 
