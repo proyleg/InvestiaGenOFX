@@ -10,11 +10,11 @@ import investiagenofx.util.Utilities;
  */
 public class MyTransactions {
 
-    private String acctID;
+    private final String acctID;
     private String dtServer;
     private LocalDate dateHigh;
     private LocalDate dateLow;
-    private ArrayList<Transaction> transactions;
+    private final ArrayList<Transaction> transactions;
 
     /**
      *

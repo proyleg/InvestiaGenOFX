@@ -70,11 +70,12 @@ import ofx.OFX;
  * @author Pierre
  */
 public class InvestiaGenOFXController implements Initializable {
-    private static HtmlPage page;
-    private static  int nbrAccount = 5;
-    private static  String[] accountHrefTransac = new String[nbrAccount];
-    private static  String[] accountHrefInvest = new String[nbrAccount];
-    private static  String[] accountNumber = new String[nbrAccount];
+
+    private static HtmlPage htmlPage;
+    private static final int nbrAccount = 5;
+    private static final String[] accountHrefTransac = new String[nbrAccount];
+    private static final String[] accountHrefInvest = new String[nbrAccount];
+    private static final String[] accountNumber = new String[nbrAccount];
 
     public static ObservableList<Investment> investments;
 
@@ -222,28 +223,28 @@ public class InvestiaGenOFXController implements Initializable {
     @FXML
     void login(ActionEvent event) {
         try {
-            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText());
-//            page = webClient.getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/Login.htm");
+            htmlPage = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText());
+//            page = InvestiaGenOFX.getWebClient().getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/_RR/Login.htm");
             // English please 
-            HtmlAnchor anchor = page.getHtmlElementById("a0");
+            HtmlAnchor anchor = htmlPage.getHtmlElementById("a0");
             if (anchor.getTextContent().toLowerCase().startsWith("english")) {
-                page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
+                htmlPage = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
             }
-            HtmlForm form = page.getFormByName("login");
+            HtmlForm form = htmlPage.getFormByName("login");
             HtmlTextInput userId = form.getInputByName("login:userId");
             HtmlPasswordInput password = form.getInputByName("login:password");
             userId.setValueAttribute(f_clientNum.getEditor().getText());
             password.setValueAttribute(f_password.getText());
             HtmlSubmitInput signInButton = form.getInputByName("login:j_id52");
-            page = signInButton.click();
+            htmlPage = signInButton.click();
 //            page =  webClient.getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/InvalidLogin.htm");
-//            page = webClient.getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/Dashboard.htm");
+//            page = InvestiaGenOFX.getWebClient().getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/_RR/Dashboard.htm");
         } catch (Exception ex) {
             f_message.setText("Le système ne smble pas accessible. Voir le fichier de log...");
             Logger.getLogger(InvestiaGenOFXController.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            HtmlDivision div = page.getHtmlElementById("login:j_id35");
+            HtmlDivision div = htmlPage.getHtmlElementById("login:j_id35");
             f_message.setText(div.asText());
         } catch (ElementNotFoundException e) {
             f_login.setDisable(true);
@@ -262,10 +263,10 @@ public class InvestiaGenOFXController implements Initializable {
 
     @FXML
     void logout(ActionEvent event) {
-        HtmlAnchor anchor = page.getHtmlElementById("a1");
+        HtmlAnchor anchor = htmlPage.getHtmlElementById("a1");
         try {
-            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
-//            page = webClient.getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/Login.htm");
+            htmlPage = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
+//            page = InvestiaGenOFX.getWebClient().getPage("file:///C:/Users/Pierre/Downloads/InvestiaTest/_RR/Login.htm");
         } catch (Exception ex) {
             Logger.getLogger(InvestiaGenOFXController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -273,19 +274,26 @@ public class InvestiaGenOFXController implements Initializable {
     }
 
     private void getAccounts() {
-        for (int i = 0; i < 100; i++) {
-            try {
-                HtmlDivision div = page.getHtmlElementById("regPanel:0:table:" + i + ":row");
-                f_accountList.get(i).setVisible(true);
-                f_accountList.get(i).setText(div.asText().replaceAll("(\r\n)+", "\r\n"));
-                HtmlAnchor anchor = page.getHtmlElementById("regPanel:0:table:" + i + ":a6");
-//                System.out.println(anchor.getTextContent());
-//                System.out.println(anchor.getAttribute("title"));
-                accountHrefTransac[i] = anchor.getHrefAttribute();
-                accountNumber[i] = anchor.getAttribute("title").split(":")[1].trim();
-                anchor = page.getHtmlElementById("regPanel:0:table:" + i + ":a5");
-                accountHrefInvest[i] = anchor.getHrefAttribute();
-            } catch (Exception ex) {
+        int k = 0;
+        for (int i = 0; i < nbrAccount; i++) {
+            for (int j = 0; j < 100; j++) {
+                try {
+                    HtmlDivision div = htmlPage.getHtmlElementById("regPanel:" + i + ":table:" + j + ":row");
+                    f_accountList.get(k).setVisible(true);
+                    f_accountList.get(k).setText(div.asText().replaceAll("(\r\n)+", "\r\n"));
+                    HtmlAnchor anchor = htmlPage.getHtmlElementById("regPanel:" + i + ":table:" + j + ":a6");
+//                    System.out.println(anchor.getTextContent());
+//                    System.out.println(anchor.getAttribute("title"));
+                    accountHrefTransac[k] = anchor.getHrefAttribute();
+                    accountNumber[k] = anchor.getAttribute("title").split(":")[1].trim();
+                    anchor = htmlPage.getHtmlElementById("regPanel:" + i + ":table:" + j + ":a5");
+                    accountHrefInvest[k] = anchor.getHrefAttribute();
+                    k++;
+                } catch (Exception ex) {
+                    break;
+                }
+            }
+            if (k > nbrAccount - 1) {
                 break;
             }
         }
@@ -301,12 +309,12 @@ public class InvestiaGenOFXController implements Initializable {
         }
         try {
             // Get the transactions page for the account from the pressed button value=0..5 
-            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefTransac[idxButton]);
+            htmlPage = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefTransac[idxButton]);
             // Switch to display 15 transactions per page
-            HtmlSelect select = page.getHtmlElementById("j_id183:pageSize");
+            HtmlSelect select = htmlPage.getHtmlElementById("j_id183:pageSize");
             select.setSelectedAttribute("15", true);
             select.click();
-            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefTransac[idxButton]);
+            htmlPage = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefTransac[idxButton]);
         } catch (Exception ex) {
             Logger.getLogger(InvestiaGenOFXController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -340,12 +348,12 @@ public class InvestiaGenOFXController implements Initializable {
     private void getInvestments(int accountIdx) {
         investments = FXCollections.observableArrayList();
         try {
-            page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefInvest[accountIdx]);
+            htmlPage = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + accountHrefInvest[accountIdx]);
         } catch (Exception ex) {
             Logger.getLogger(InvestiaGenOFXController.class.getName()).log(Level.SEVERE, null, ex);
         }
         HtmlDivision div;
-        div = (HtmlDivision) page.getByXPath("//div[@class='dateTxt ']").get(0);
+        div = (HtmlDivision) htmlPage.getByXPath("//div[contains(@class, 'dateTxt')]").get(0);
         String[] tokenDate = div.asText().replace(",", "").split(" ");
         LocalDate balanceDate = LocalDate.parse(
                 tokenDate[tokenDate.length - 3]
@@ -354,7 +362,7 @@ public class InvestiaGenOFXController implements Initializable {
                 DateTimeFormatter.ofPattern("MMMMddyyyy"));
         for (int i = 0; i < 1000; i++) {
             try {
-                div = page.getHtmlElementById("table:" + i + ":row");
+                div = htmlPage.getHtmlElementById("table:" + i + ":row");
             } catch (ElementNotFoundException e) {
                 break;
             }
@@ -367,11 +375,11 @@ public class InvestiaGenOFXController implements Initializable {
                 investments.add(investment);
                 continue;
             }
-            div = (HtmlDivision) page.getByXPath("//div[@class='accountDetailsBlind investmentDesc']").get(i);
+            div = (HtmlDivision) htmlPage.getByXPath("//div[@class='accountDetailsBlind investmentDesc']").get(i);
             HtmlTable table = (HtmlTable) div.getByXPath("table").get(0);
             String symbol = table.getCellAt(1, 1).getTextContent().replace(" ", "");
 
-            div = (HtmlDivision) page.getByXPath("//div[@class='delimeterArrowLeftInv']").get(i);
+            div = (HtmlDivision) htmlPage.getByXPath("//div[@class='delimeterArrowLeftInv']").get(i);
             table = (HtmlTable) div.getByXPath("table").get(0);
             String quantity = table.getCellAt(5, 1).getTextContent().replace(",", "").trim();
             String lastPrice = table.getCellAt(6, 1).getTextContent().replace("\n", "").replace("CAD", "").trim();
@@ -385,7 +393,7 @@ public class InvestiaGenOFXController implements Initializable {
         for (int i = 0; i < 100; i++) {
             for (int j = 0; j < 100; j++) {
                 try {
-                    HtmlDivision div = page.getHtmlElementById("table:" + j + ":d6");
+                    HtmlDivision div = htmlPage.getHtmlElementById("table:" + j + ":d6");
                     String[] transacInfo = div.asText().split("\r\n");
                     // transactInfo[0] = date format MMM dd, YYYY
                     // transactInfo[1] = Transaction Type
@@ -403,18 +411,18 @@ public class InvestiaGenOFXController implements Initializable {
                         case "Switch Out":
 //                            System.out.println("TransDate " + transDate);
 //                            System.out.println("TransType " + transacInfo[1]);
-                            HtmlSpan span = page.getHtmlElementById("table:" + j + ":order-id");
+                            HtmlSpan span = htmlPage.getHtmlElementById("table:" + j + ":order-id");
                             String fitid = span.getTextContent().trim();
 //                            span = page.getHtmlElementById("table:" + j + ":desc");
-                            span = page.getHtmlElementById("table:" + j + ":symbol");
+                            span = htmlPage.getHtmlElementById("table:" + j + ":symbol");
                             String symbol = span.getTextContent().trim().replace("(", "").replace(")", "");
-                            span = page.getHtmlElementById("table:" + j + ":amount");
+                            span = htmlPage.getHtmlElementById("table:" + j + ":amount");
                             String amount = span.getTextContent().trim().replace("CAD", "").replace("(", "-").replace(")", "").replace(",", "");
 //                            span = page.getHtmlElementById("table:" + j + ":deduction");
 //                            span = page.getHtmlElementById("table:" + j + ":unit-price");
-                            span = page.getHtmlElementById("table:" + j + ":units");
+                            span = htmlPage.getHtmlElementById("table:" + j + ":units");
                             String unit = span.getTextContent().trim().replace(",", "");
-                            span = page.getHtmlElementById("table:" + j + ":closingUnitBalance");
+                            span = htmlPage.getHtmlElementById("table:" + j + ":closingUnitBalance");
                             String unitBalance = span.getTextContent().trim().replace(",", "");
                             String price = Float.toString(Float.parseFloat(amount) / Float.parseFloat(unit));
 
@@ -435,8 +443,8 @@ public class InvestiaGenOFXController implements Initializable {
                 }
             }
             try {
-                HtmlAnchor anchor = page.getHtmlElementById("next-trans-account");
-                page = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
+                HtmlAnchor anchor = htmlPage.getHtmlElementById("next-trans-account");
+                htmlPage = InvestiaGenOFX.getWebClient().getPage(f_investiaURL.getText() + anchor.getHrefAttribute());
             } catch (Exception ex) {
                 break;
             }
@@ -482,7 +490,7 @@ public class InvestiaGenOFXController implements Initializable {
         ((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/myIcons/Teddy-Bear-Sick-icon.png"));
         alert.setTitle("Information");
         alert.setHeaderText("InvestiaGenOFX");
-        alert.setContentText("Version 1.1_1");
+        alert.setContentText("Version 1.1_2");
         alert.show();
     }
 }
